@@ -1,4 +1,4 @@
-package com.kyoo.mall.app.config;
+package com.kyoo.mall.app.infrastructure;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;

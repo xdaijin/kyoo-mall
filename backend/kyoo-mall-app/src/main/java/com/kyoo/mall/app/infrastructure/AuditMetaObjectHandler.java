@@ -1,4 +1,4 @@
-package com.kyoo.mall.app.config;
+package com.kyoo.mall.app.infrastructure;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import org.apache.ibatis.reflection.MetaObject;

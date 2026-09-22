@@ -1,4 +1,4 @@
-package com.kyoo.mall.app.config;
+package com.kyoo.mall.app.interfaces;
 
 import com.kyoo.mall.common.BusinessException;
 import com.kyoo.mall.common.Result;
