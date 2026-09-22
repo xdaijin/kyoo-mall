@@ -12,9 +12,14 @@
 
     <artifactId>kyoo-mall-common</artifactId>
     <name>kyoo-mall-common</name>
-    <description>共享内核：统一响应、业务异常。保持零 Spring 依赖，任何模块/服务都可复用。</description>
+    <description>共享内核：统一响应、业务异常、审计字段基类。保持零 Spring 依赖，任何模块/服务都可复用。</description>
 
     <dependencies>
+        <!-- 仅 MP 注解（@TableField 等被动元数据），不引入完整 MyBatis-Plus，保持零 Spring 依赖 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

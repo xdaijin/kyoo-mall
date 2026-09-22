@@ -9,8 +9,6 @@ import com.kyoo.mall.product.domain.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 /**
  * 商品应用服务：用例编排。入参为 Command（由 interfaces 层从 Request 转换），
  * 不直接接收领域对象——id、status、时间戳等由服务端管理。
@@ -50,7 +48,6 @@ public class ProductAppService {
         product.setCoverImage(command.coverImage());
         product.setPrice(command.price());
         product.setStock(command.stock());
-        product.setUpdateTime(LocalDateTime.now());
         productRepository.updateById(product);
         return productRepository.findById(id);
     }

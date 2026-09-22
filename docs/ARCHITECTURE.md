@@ -32,7 +32,7 @@ backend/
 
 | 模块 | 职责 | 允许依赖 |
 |---|---|---|
-| `kyoo-mall-common` | 跨上下文共享的原语：`Result`、`BusinessException`。**禁止**放业务概念、工具类堆积 | 仅 lombok（零 Spring 依赖） |
+| `kyoo-mall-common` | 跨上下文共享的原语：`Result`、`BusinessException`、`BaseEntity`（审计字段基类）。**禁止**放业务概念、工具类堆积 | lombok + MP 纯注解包（零 Spring 依赖） |
 | `kyoo-mall-<域>` | 一个限界上下文的全部代码（如 user = 注册/登录/令牌） | common + 技术框架 |
 | `kyoo-mall-app` | 组装层：启动类、Security 规则、全局异常处理、`application*.yml`、架构测试 | 所有业务模块 |
 
@@ -94,6 +94,7 @@ com.kyoo.mall.<域>/
 - Controller 只做：参数校验（`@Valid`）→ 调用一个应用服务方法 → 组装 `Result<XxxResponse>`。**禁止**在 Controller 写业务判断、直接调仓储/Mapper。
 - 应用服务之间可以同模块内调用；跨模块调用走 §2.1 第 2 条。
 - 业务异常一律抛 `BusinessException`（common），由 app 层 `GlobalExceptionHandler` 统一转 `Result`。禁止 Controller 手写 try-catch 转响应。
+- 审计字段（`createTime`/`updateTime`）统一定义在 common 的 `BaseEntity`，实体一律继承、禁止重复声明；字段值由 app 模块 `AuditMetaObjectHandler`（MP MetaObjectHandler）在 insert/update 时自动填充，业务代码（含聚合工厂方法）禁止手动 set。
 
 ### 2.4 命名约定
 

@@ -36,7 +36,7 @@ npm run build                # 生产构建
 ### 模块划分与依赖规则
 
 ```
-kyoo-mall-common   共享内核（Result、BusinessException），零 Spring 依赖
+kyoo-mall-common   共享内核（Result、BusinessException、BaseEntity 审计字段基类），零 Spring 依赖
 kyoo-mall-user     用户/身份上下文：注册、登录认证、JWT 签发
 kyoo-mall-product  商品上下文
 kyoo-mall-app      组装层/启动模块：唯一可执行模块，含启动类、Security 配置、全局异常处理、application.yml
