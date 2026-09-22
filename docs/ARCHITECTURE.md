@@ -4,6 +4,22 @@
 > 后端的核心依赖/分层规则由 ArchUnit 自动化校验（`backend/kyoo-mall-app/src/test/java/.../ArchitectureTest.java`），
 > 违反规则 `mvn test` / `mvn package` 会直接失败。无法自动校验的部分（命名、归属判断）以本文档为准，Code Review 时检查。
 
+## 0. 技术栈（选型是约定，引入替代方案先改本节）
+
+| 关注点 | 选型 | 说明 |
+|---|---|---|
+| 框架 | Spring Boot 3.5（Java 21） | Maven 多模块 modulith |
+| ORM | MyBatis-Plus（基于 MyBatis） | Mapper 只被 RepositoryImpl 使用；`Page`/`QueryWrapper` 不出 infrastructure |
+| 数据库 | PostgreSQL | 本地 docker-compose；H2 profile 仅用于无 PG 时验证 |
+| 安全 | Spring Security + JWT（jjwt） | 无状态：验签后从 claims 构建认证主体，不查库 |
+| 测试 | JUnit 5 + Mockito + AssertJ | `spring-boot-starter-test` 自带，无需额外依赖；架构规则用 ArchUnit |
+| 类型转换 | MapStruct | assembler 层使用，编译期生成、无反射 |
+| JSON 序列化 | Jackson | Spring Boot 默认，禁止引入 Fastjson/Gson 混用 |
+| 日志 | SLF4J（API）+ Log4j2（实现） | 业务代码只用 `@Slf4j`（slf4j API）；Logback 已在 app 组装层统一排除，替换为 `spring-boot-starter-log4j2`，配置见 `log4j2.xml` |
+| 代码生成 | Lombok | 注解处理器在父 pom 统一配置；禁止手写 getter/setter/构造器样板 |
+
+**MapStruct 使用注意（经典坑）**：引入模块需把 `mapstruct-processor` 加入该模块 `annotationProcessorPaths`，且与 Lombok 共存时还需 `lombok-mapstruct-binding`，否则生成代码拿不到 Lombok 的 getter/setter。处理器顺序：lombok → lombok-mapstruct-binding → mapstruct-processor。
+
 ## 1. 顶层结构
 
 ```
@@ -94,7 +110,7 @@ com.kyoo.mall.<域>/
 - Controller 只做：参数校验（`@Valid`）→ 调用一个应用服务方法 → 组装 `Result<XxxResponse>`。**禁止**在 Controller 写业务判断、直接调仓储/Mapper。
 - 应用服务之间可以同模块内调用；跨模块调用走 §2.1 第 2 条。
 - 业务异常一律抛 `BusinessException`（common），由 app 层 `GlobalExceptionHandler` 统一转 `Result`。禁止 Controller 手写 try-catch 转响应。
-- 审计字段（`createTime`/`updateTime`）统一定义在 common 的 `BaseEntity`，实体一律继承、禁止重复声明；字段值由 app 模块 `AuditMetaObjectHandler`（MP MetaObjectHandler）在 insert/update 时自动填充，业务代码（含聚合工厂方法）禁止手动 set。
+- 审计字段（`createTime`/`updateTime`）统一定义在 common 的 `BaseEntity`，实体一律继承、禁止重复声明；字段值由 app 模块 infrastructure 层的 `AuditMetaObjectHandler`（MP MetaObjectHandler）在 insert/update 时自动填充，业务代码（含聚合工厂方法）禁止手动 set。
 - 分页契约统一用 common 的 `PageQuery`/`PageResult`（技术无关）；MyBatis-Plus 的 `Page`、`QueryWrapper` 只允许出现在 infrastructure，由仓储实现负责双向转换（ArchUnit 校验）。
 
 ### 2.4 命名约定
@@ -124,7 +140,7 @@ com.kyoo.mall.<域>/
 | `application.yml`、profile 配置（`application-h2.yml`） | 仅 `kyoo-mall-app/src/main/resources/` |
 | H2 验证库脚本 | `kyoo-mall-app/src/main/resources/db/h2-init.sql` |
 | PostgreSQL 正式脚本 | `backend/db/init.sql`（docker-compose 挂载） |
-| `@Configuration` 配置类 | 默认放 `app` 模块（`app/config`）；某模块确需自带配置时放自己的 `infrastructure` 并在注释说明理由 |
+| 全局组件（`@Configuration`/`@Component`） | app 模块内**按层归类**：Web 全局处理与入站配置（`GlobalExceptionHandler`、`SecurityConfig` 等）→ `app/interfaces`；持久化/ORM 技术配置（`MybatisPlusConfig`、`AuditMetaObjectHandler`）→ `app/infrastructure`；安全装配（JWT 过滤器、`LoginUser` 认证主体等）→ `app/security`；模块自有配置属性 → 该模块 `infrastructure/config` |
 | 表结构变更 | **必须同步改两处**：`backend/db/init.sql` 和 H2 脚本 |
 
 ### 2.6 测试归属

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 日志实现：SLF4J API + Log4j2（技术栈约定见 docs/ARCHITECTURE.md §0）。
+     最小可用配置：控制台输出，级别/格式由 Spring Boot 的 logging.* 属性接管。 -->
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p %pid --- [%15.15t] %-40.40logger{39} : %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

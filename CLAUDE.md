@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Kyoo Mall 是一个前后端分离的商城系统，单仓库（monorepo）管理：
 
-- `backend/` — Spring Boot 3.5 + Java 21 + **Maven 多模块（DDD modulith）**，MyBatis-Plus + PostgreSQL，Spring Security + JWT 无状态认证。按限界上下文拆模块，目标是将来能直接拆成微服务。
+- `backend/` — Spring Boot 3.5 + Java 21 + **Maven 多模块（DDD modulith）**，MyBatis-Plus（基于 MyBatis）+ PostgreSQL，Spring Security + JWT 无状态认证；测试 JUnit 5 + Mockito + AssertJ（starter-test 自带）+ ArchUnit（架构守护）；类型转换 MapStruct；JSON 序列化 Jackson；日志 SLF4J + Log4j2（Logback 已在 app 层排除）；代码生成 Lombok。按限界上下文拆模块，目标是将来能直接拆成微服务。
 - `frontend/` — Vue 3 + Vite + Element Plus + Pinia + Vue Router + axios
 
 ## 常用命令
@@ -61,8 +61,8 @@ com.kyoo.mall.<域>/
 - 仓储接口定义在 `domain/repository`，实现放在 `infrastructure/persistence`，应用层只依赖接口。
 - 分页契约使用 common 的 `PageQuery`/`PageResult`（技术无关）；MyBatis-Plus 的 `Page`/`QueryWrapper` 只允许出现在 infrastructure（ArchUnit 校验）。
 - 统一响应 `Result<T>`（`code=0` 成功）；业务代码抛 `BusinessException`，由 app 模块的 `GlobalExceptionHandler` 统一处理，不要在 Controller 手写 try-catch。
-- 启动类在 `com.kyoo.mall` 根部（app 模块），组件扫描覆盖所有模块；Mapper 由 `@MapperScan("com.kyoo.mall.**.infrastructure.persistence.mapper")` 扫描（Mapper 单独放 mapper 子包，只被 RepositoryImpl 使用）。
-- **JWT 签发在 user 模块**（`infrastructure/security/JwtTokenProvider`），**安全规则在 app 模块**（`config/SecurityConfig`：哪些路径匿名属于部署关注点）。`/auth/**` 与商品 GET 匿名，其余需登录。
+- 启动类在 `com.kyoo.mall.app` 包（app 模块），通过 `scanBasePackages = "com.kyoo.mall"` 显式覆盖所有模块（默认只扫启动类所在包，漏配会导致业务模块 Bean 全部丢失）；Mapper 由 `@MapperScan("com.kyoo.mall.**.infrastructure.persistence.mapper")` 扫描（Mapper 单独放 mapper 子包，只被 RepositoryImpl 使用）。
+- **JWT 签发在 user 模块**（`infrastructure/security/JwtTokenProvider`），**安全规则在 app 模块**（`interfaces/SecurityConfig`：过滤器链、放行路径属 Web 入站关注点）。`/auth/**` 与商品 GET 匿名，其余需登录。
 - 表结构变更同步维护两处：`backend/db/init.sql`（PostgreSQL）与 `kyoo-mall-app/src/main/resources/db/h2-init.sql`（H2 验证 profile）。注意 `user` 是 PostgreSQL 保留字，用户表名为 `sys_user`。
 
 ## 前端架构（`frontend/src/`）
