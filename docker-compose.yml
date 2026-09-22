@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: kyoo-mall-postgres
+    environment:
+      POSTGRES_DB: kyoo_mall
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 首次初始化时自动建表并插入示例数据
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kyoo_mall"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

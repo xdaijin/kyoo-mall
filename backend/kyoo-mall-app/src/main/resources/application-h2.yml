@@ -1,0 +1,13 @@
+# 本地快速验证 profile：无需 Docker/PostgreSQL，使用 H2 内存库（PostgreSQL 兼容模式）
+# 启动方式：mvn spring-boot:run -pl kyoo-mall-app -am -Dspring-boot.run.profiles=h2
+#        或 java -jar kyoo-mall-app/target/kyoo-mall-app-*.jar --spring.profiles.active=h2
+spring:
+  datasource:
+    url: jdbc:h2:mem:kyoo_mall;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/h2-init.sql

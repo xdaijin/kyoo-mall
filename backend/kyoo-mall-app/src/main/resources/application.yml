@@ -1,0 +1,30 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: kyoo-mall-server
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:kyoo_mall}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    banner: false
+
+# 开发默认值，生产环境务必通过环境变量覆盖 JWT_SECRET
+jwt:
+  secret: ${JWT_SECRET:kyoo-mall-dev-secret-key-please-change-in-production-0123456789abcdef}
+  # 过期时间（毫秒），默认 24h
+  expiration: ${JWT_EXPIRATION:86400000}
+
+logging:
+  level:
+    com.kyoo.mall: debug
