@@ -3,6 +3,7 @@ package com.kyoo.mall.user.infrastructure.persistence;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kyoo.mall.user.domain.model.SysUser;
 import com.kyoo.mall.user.domain.repository.UserRepository;
+import com.kyoo.mall.user.infrastructure.persistence.mapper.SysUserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

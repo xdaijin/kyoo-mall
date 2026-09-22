@@ -1,4 +1,4 @@
-package com.kyoo.mall.user.application;
+package com.kyoo.mall.user.application.result;
 
 import com.kyoo.mall.user.domain.model.SysUser;
 

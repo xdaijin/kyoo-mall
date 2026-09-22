@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * （com.kyoo.mall.user / product / common / app）。
  */
 @SpringBootApplication
-@MapperScan("com.kyoo.mall.**.infrastructure.persistence")
+@MapperScan("com.kyoo.mall.**.infrastructure.persistence.mapper")
 public class KyooMallApplication {
 
     public static void main(String[] args) {

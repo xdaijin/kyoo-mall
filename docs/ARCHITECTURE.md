@@ -47,20 +47,38 @@ backend/
 
 ```
 com.kyoo.mall.<域>/
-├── interfaces/                    # 接入层：HTTP 边界
-│   ├── XxxController.java
-│   └── dto/                       # XxxRequest / XxxResponse（record）
+├── interfaces/                    # 接入层：所有入站适配器
+│   ├── XxxController.java         #   HTTP 入站
+│   ├── consumer/                  #   MQ 消费者（入站，用到才建）+ message/ 消息体
+│   ├── job/                       #   定时任务（入站，用到才建）
+│   ├── dto/                       #   XxxRequest / XxxResponse（record，HTTP 协议模型）
+│   └── assembler/                 #   DTO ↔ Command/Result 转换（可选）
 ├── application/                   # 应用层：用例编排、事务边界
-│   ├── XxxAppService.java
-│   └── XxxResult.java             # 应用层内部返回对象（可选）
+│   ├── service/XxxAppService.java #   一个聚合一个应用服务
+│   ├── command/                   #   写用例入参（record，用例间不复用）
+│   ├── query/                     #   读用例查询条件（可选）
+│   ├── result/XxxResult.java      #   应用层返回对象（record，可选）
+│   ├── listener/                  #   领域事件订阅（可选，只做跨聚合编排）
+│   └── gateway/                   #   出站端口接口 + dto/（技术无关，可选）
 ├── domain/                        # 领域层：业务核心，零 Spring 依赖
-│   ├── model/Xxx.java             # 领域对象（务实起见兼任持久化对象，见 §2.4）
-│   ├── repository/XxxRepository.java   # 仓储接口
-│   └── service/XxxService.java    # 领域服务接口（如 TokenProvider）
+│   ├── model/Xxx.java             #   领域对象（务实起见兼任持久化对象，见 §2.4）
+│   │                              #   业务枚举/常量跟着聚合走，禁止集中式 enums/ 目录
+│   ├── event/                     #   领域事件（不可变契约，与 model 平级）
+│   ├── repository/XxxRepository.java   # 仓储接口 + query/ 查询条件对象
+│   └── service/XxxService.java    #   领域服务接口（如 TokenProvider）+ param/ 参数对象
 └── infrastructure/                # 基础设施层：技术实现细节
-    ├── persistence/               # XxxMapper（MP）+ XxxRepositoryImpl
-    └── <技术点>/                  # 如 security/、messaging/
+    ├── persistence/
+    │   ├── mapper/XxxMapper.java  #   MP Mapper（@MapperScan 精确指向 mapper 子包，
+    │   │                          #     只允许被 XxxRepositoryImpl 使用，ArchUnit 校验）
+    │   ├── po/                    #   持久化对象（可选，模型与表分离时用）
+    │   └── XxxRepositoryImpl.java #   仓储实现（不进 @MapperScan 范围）
+    ├── messaging/                 #   MQ 生产者实现 + message/（用到才建）
+    ├── client/                    #   外部服务客户端（实现 application/gateway，用到才建）
+    ├── config/                    #   本模块的 @ConfigurationProperties（可选）
+    └── <技术点>/                  #   如 security/、util/
 ```
+
+子包渐进原则：**用到才建**（无 MQ 不建 consumer/messaging）；application 单域 <10 类时可扁平，10+ 再按类型分包。
 
 ### 2.3 各层允许/禁止（ArchUnit 自动校验）
 
@@ -82,13 +100,19 @@ com.kyoo.mall.<域>/
 | 类型 | 命名 | 示例 |
 |---|---|---|
 | Controller | `XxxController` | `ProductController` |
-| 应用服务 | `XxxAppService` | `ProductAppService` |
+| 应用服务 | `XxxAppService`（放 application/service） | `ProductAppService` |
+| 写用例入参 | `XxxCommand`（record，放 application/command，不复用） | `CreateProductCommand` |
+| 读用例查询条件 | `XxxQuery`（放 application/query 或 domain/repository/query） | `OrderPageQuery` |
 | 领域对象 | 名词本身，不加后缀 | `Product`、`SysUser` |
 | 仓储 | `XxxRepository` / `XxxRepositoryImpl` | `UserRepository` / `UserRepositoryImpl` |
-| MyBatis-Plus Mapper | `XxxMapper`，只被 `XxxRepositoryImpl` 使用 | `SysUserMapper` |
+| MyBatis-Plus Mapper | `XxxMapper`，放 `persistence/mapper/`，只被 `XxxRepositoryImpl` 使用 | `SysUserMapper` |
 | 请求/响应 DTO | `XxxRequest` / `XxxResponse`（record，放 interfaces/dto） | `LoginRequest` |
-| 应用层返回对象 | `XxxResult`（record，放 application） | `LoginResult` |
+| 应用层返回对象 | `XxxResult`（record，放 application/result） | `LoginResult` |
+| 出站端口 | `XxxGateway` + `dto/XxxParam`、`XxxResult`（application/gateway） | `SmsGateway` |
+| 第三方协议模型 | `XxxApiRequest` / `XxxApiResponse`（infrastructure/client/<服务>/dto） | `AliyunSmsRequest` |
 | 表名 | 小写下划线；避开 PostgreSQL 保留字（如用户表 `sys_user`） | `product` |
+
+**三套 DTO 互不复用**：`interfaces/dto`（对外 HTTP）、`application/gateway/dto`（出站端口契约，技术无关）、`infrastructure/client/dto`（第三方 wire 格式）。字段相同也不合并，重复是有意的隔离。
 
 ### 2.5 配置与资源归属
 
@@ -108,7 +132,8 @@ com.kyoo.mall.<域>/
 ### 2.7 反例速查
 
 ```
-❌ Controller 里 @Autowired XxxMapper 直接查库          → Mapper 只能被 RepositoryImpl 用
+❌ Controller 里 @Autowired XxxMapper 直接查库          → Mapper 只能被 RepositoryImpl 用（ArchUnit 校验）
+❌ Controller 用领域对象当 @RequestBody 接收            → 写接口必须走 XxxRequest + XxxCommand，id/status/时间戳由服务端管理
 ❌ application 层 import infrastructure 的 Mapper/Impl  → 只能注入 domain 的仓储接口
 ❌ order 模块 pom 里依赖 product 模块                   → 业务模块间禁止依赖，在 app 层编排
 ❌ domain 模型上标 @Service / 注入 Spring Bean          → domain 零 Spring 依赖

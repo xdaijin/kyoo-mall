@@ -42,4 +42,18 @@ public class SysUser {
     public boolean isEnabled() {
         return STATUS_ENABLED == status;
     }
+
+    /**
+     * 注册新用户（工厂方法）：昵称缺省取用户名，初始状态为正常，创建/更新时间在此收口。
+     */
+    public static SysUser register(String username, String encodedPassword, String nickname) {
+        SysUser user = new SysUser();
+        user.setUsername(username);
+        user.setPassword(encodedPassword);
+        user.setNickname(nickname == null || nickname.isBlank() ? username : nickname);
+        user.setStatus(STATUS_ENABLED);
+        user.setCreateTime(LocalDateTime.now());
+        user.setUpdateTime(LocalDateTime.now());
+        return user;
+    }
 }

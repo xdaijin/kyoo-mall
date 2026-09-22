@@ -61,6 +61,11 @@ class ArchitectureTest {
             .should().dependOnClassesThat().resideInAPackage("com.kyoo.mall..infrastructure..")
             .as("Controller 只调应用服务，不得直接使用 Mapper/仓储实现/技术组件");
 
+    private static final ArchRule MAPPER只被仓储实现使用 = noClasses()
+            .that().resideOutsideOfPackage("com.kyoo.mall..infrastructure.persistence..")
+            .should().dependOnClassesThat().resideInAPackage("com.kyoo.mall..infrastructure.persistence.mapper..")
+            .as("Mapper 是 ORM 细节，只能被 RepositoryImpl 使用，禁止注入到 Controller/AppService");
+
     // ========== 执行 ==========
 
     @Test
@@ -91,5 +96,10 @@ class ArchitectureTest {
     @Test
     void interfacesMustNotDependOnInfrastructure() {
         INTERFACES不得依赖INFRASTRUCTURE.check(classes);
+    }
+
+    @Test
+    void mapperOnlyUsedByRepositoryImpl() {
+        MAPPER只被仓储实现使用.check(classes);
     }
 }

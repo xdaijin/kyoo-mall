@@ -1,8 +1,8 @@
 package com.kyoo.mall.user.interfaces;
 
 import com.kyoo.mall.common.Result;
-import com.kyoo.mall.user.application.LoginResult;
-import com.kyoo.mall.user.application.UserAppService;
+import com.kyoo.mall.user.application.result.LoginResult;
+import com.kyoo.mall.user.application.service.UserAppService;
 import com.kyoo.mall.user.interfaces.dto.LoginRequest;
 import com.kyoo.mall.user.interfaces.dto.LoginResponse;
 import com.kyoo.mall.user.interfaces.dto.RegisterRequest;

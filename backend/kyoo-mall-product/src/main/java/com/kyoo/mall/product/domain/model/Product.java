@@ -41,4 +41,21 @@ public class Product {
     public boolean isOnSale() {
         return STATUS_ON_SALE == status;
     }
+
+    /**
+     * 创建上架商品（工厂方法）：初始状态为上架，创建/更新时间在此收口。
+     */
+    public static Product createOnSale(String name, String description, String coverImage,
+                                       BigDecimal price, Integer stock) {
+        Product product = new Product();
+        product.setName(name);
+        product.setDescription(description);
+        product.setCoverImage(coverImage);
+        product.setPrice(price);
+        product.setStock(stock);
+        product.setStatus(STATUS_ON_SALE);
+        product.setCreateTime(LocalDateTime.now());
+        product.setUpdateTime(LocalDateTime.now());
+        return product;
+    }
 }

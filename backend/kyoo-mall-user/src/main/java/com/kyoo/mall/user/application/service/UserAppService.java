@@ -1,7 +1,8 @@
-package com.kyoo.mall.user.application;
+package com.kyoo.mall.user.application.service;
 
 import com.kyoo.mall.common.BusinessException;
 import com.kyoo.mall.common.Result;
+import com.kyoo.mall.user.application.result.LoginResult;
 import com.kyoo.mall.user.domain.model.SysUser;
 import com.kyoo.mall.user.domain.repository.UserRepository;
 import com.kyoo.mall.user.domain.service.TokenProvider;
@@ -9,9 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.time.LocalDateTime;
 
 /**
  * 用户应用服务：注册、登录认证等用例编排。
@@ -29,13 +27,7 @@ public class UserAppService {
         if (userRepository.existsByUsername(username)) {
             throw new BusinessException("用户名已被注册");
         }
-        SysUser user = new SysUser();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setNickname(StringUtils.hasText(nickname) ? nickname : username);
-        user.setStatus(SysUser.STATUS_ENABLED);
-        user.setCreateTime(LocalDateTime.now());
-        user.setUpdateTime(LocalDateTime.now());
+        SysUser user = SysUser.register(username, passwordEncoder.encode(rawPassword), nickname);
         userRepository.save(user);
         return issueToken(user);
     }

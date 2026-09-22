@@ -1,4 +1,4 @@
-package com.kyoo.mall.product.infrastructure.persistence;
+package com.kyoo.mall.product.infrastructure.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.kyoo.mall.product.domain.model.Product;

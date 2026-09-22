@@ -2,8 +2,11 @@ package com.kyoo.mall.product.interfaces;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kyoo.mall.common.Result;
-import com.kyoo.mall.product.application.ProductAppService;
+import com.kyoo.mall.product.application.command.CreateProductCommand;
+import com.kyoo.mall.product.application.command.UpdateProductCommand;
+import com.kyoo.mall.product.application.service.ProductAppService;
 import com.kyoo.mall.product.domain.model.Product;
+import com.kyoo.mall.product.interfaces.dto.ProductRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,12 +39,16 @@ public class ProductController {
 
     /** 以下接口需要登录 */
     @PostMapping
-    public Result<Product> create(@Valid @RequestBody Product product) {
-        return Result.ok(productAppService.create(product));
+    public Result<Product> create(@Valid @RequestBody ProductRequest request) {
+        return Result.ok(productAppService.create(new CreateProductCommand(
+                request.name(), request.description(), request.coverImage(),
+                request.price(), request.stock())));
     }
 
     @PutMapping("/{id}")
-    public Result<Product> update(@PathVariable Long id, @Valid @RequestBody Product product) {
-        return Result.ok(productAppService.update(id, product));
+    public Result<Product> update(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
+        return Result.ok(productAppService.update(id, new UpdateProductCommand(
+                request.name(), request.description(), request.coverImage(),
+                request.price(), request.stock())));
     }
 }

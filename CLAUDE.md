@@ -61,7 +61,7 @@ com.kyoo.mall.<域>/
 - 仓储接口定义在 `domain/repository`，实现放在 `infrastructure/persistence`，应用层只依赖接口。
 - 分页直接暴露 MyBatis-Plus 的 `Page`（有意的取舍，见 `ProductRepository` 注释）。
 - 统一响应 `Result<T>`（`code=0` 成功）；业务代码抛 `BusinessException`，由 app 模块的 `GlobalExceptionHandler` 统一处理，不要在 Controller 手写 try-catch。
-- 启动类在 `com.kyoo.mall` 根部（app 模块），组件扫描覆盖所有模块；Mapper 由 `@MapperScan("com.kyoo.mall.**.infrastructure.persistence")` 扫描。
+- 启动类在 `com.kyoo.mall` 根部（app 模块），组件扫描覆盖所有模块；Mapper 由 `@MapperScan("com.kyoo.mall.**.infrastructure.persistence.mapper")` 扫描（Mapper 单独放 mapper 子包，只被 RepositoryImpl 使用）。
 - **JWT 签发在 user 模块**（`infrastructure/security/JwtTokenProvider`），**安全规则在 app 模块**（`config/SecurityConfig`：哪些路径匿名属于部署关注点）。`/auth/**` 与商品 GET 匿名，其余需登录。
 - 表结构变更同步维护两处：`backend/db/init.sql`（PostgreSQL）与 `kyoo-mall-app/src/main/resources/db/h2-init.sql`（H2 验证 profile）。注意 `user` 是 PostgreSQL 保留字，用户表名为 `sys_user`。
 

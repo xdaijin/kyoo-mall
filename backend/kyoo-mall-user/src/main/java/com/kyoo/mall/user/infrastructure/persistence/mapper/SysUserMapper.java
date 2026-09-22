@@ -1,4 +1,4 @@
-package com.kyoo.mall.user.infrastructure.persistence;
+package com.kyoo.mall.user.infrastructure.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.kyoo.mall.user.domain.model.SysUser;
