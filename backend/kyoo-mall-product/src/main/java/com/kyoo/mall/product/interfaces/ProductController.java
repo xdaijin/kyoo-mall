@@ -1,6 +1,7 @@
 package com.kyoo.mall.product.interfaces;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kyoo.mall.common.PageQuery;
+import com.kyoo.mall.common.PageResult;
 import com.kyoo.mall.common.Result;
 import com.kyoo.mall.product.application.command.CreateProductCommand;
 import com.kyoo.mall.product.application.command.UpdateProductCommand;
@@ -27,9 +28,9 @@ public class ProductController {
 
     /** 商品分页列表（游客可访问，仅返回上架商品） */
     @GetMapping
-    public Result<Page<Product>> page(@RequestParam(defaultValue = "1") long current,
-                                      @RequestParam(defaultValue = "10") long size) {
-        return Result.ok(productAppService.pageOnSale(current, size));
+    public Result<PageResult<Product>> page(@RequestParam(defaultValue = "1") long current,
+                                            @RequestParam(defaultValue = "10") long size) {
+        return Result.ok(productAppService.pageOnSale(PageQuery.of(current, size)));
     }
 
     @GetMapping("/{id}")

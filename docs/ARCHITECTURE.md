@@ -95,6 +95,7 @@ com.kyoo.mall.<域>/
 - 应用服务之间可以同模块内调用；跨模块调用走 §2.1 第 2 条。
 - 业务异常一律抛 `BusinessException`（common），由 app 层 `GlobalExceptionHandler` 统一转 `Result`。禁止 Controller 手写 try-catch 转响应。
 - 审计字段（`createTime`/`updateTime`）统一定义在 common 的 `BaseEntity`，实体一律继承、禁止重复声明；字段值由 app 模块 `AuditMetaObjectHandler`（MP MetaObjectHandler）在 insert/update 时自动填充，业务代码（含聚合工厂方法）禁止手动 set。
+- 分页契约统一用 common 的 `PageQuery`/`PageResult`（技术无关）；MyBatis-Plus 的 `Page`、`QueryWrapper` 只允许出现在 infrastructure，由仓储实现负责双向转换（ArchUnit 校验）。
 
 ### 2.4 命名约定
 
@@ -104,6 +105,7 @@ com.kyoo.mall.<域>/
 | 应用服务 | `XxxAppService`（放 application/service） | `ProductAppService` |
 | 写用例入参 | `XxxCommand`（record，放 application/command，不复用） | `CreateProductCommand` |
 | 读用例查询条件 | `XxxQuery`（放 application/query 或 domain/repository/query） | `OrderPageQuery` |
+| 分页契约 | `PageQuery` / `PageResult`（common，全项目统一，勿自造） | — |
 | 领域对象 | 名词本身，不加后缀 | `Product`、`SysUser` |
 | 仓储 | `XxxRepository` / `XxxRepositoryImpl` | `UserRepository` / `UserRepositoryImpl` |
 | MyBatis-Plus Mapper | `XxxMapper`，放 `persistence/mapper/`，只被 `XxxRepositoryImpl` 使用 | `SysUserMapper` |

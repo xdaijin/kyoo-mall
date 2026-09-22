@@ -59,7 +59,7 @@ com.kyoo.mall.<域>/
 
 - **领域模型与持久化对象合一**（model 直接带 MyBatis-Plus 注解），避免 DO/DTO 多层转换样板；表结构复杂化后再在 infrastructure 引入独立 PO。
 - 仓储接口定义在 `domain/repository`，实现放在 `infrastructure/persistence`，应用层只依赖接口。
-- 分页直接暴露 MyBatis-Plus 的 `Page`（有意的取舍，见 `ProductRepository` 注释）。
+- 分页契约使用 common 的 `PageQuery`/`PageResult`（技术无关）；MyBatis-Plus 的 `Page`/`QueryWrapper` 只允许出现在 infrastructure（ArchUnit 校验）。
 - 统一响应 `Result<T>`（`code=0` 成功）；业务代码抛 `BusinessException`，由 app 模块的 `GlobalExceptionHandler` 统一处理，不要在 Controller 手写 try-catch。
 - 启动类在 `com.kyoo.mall` 根部（app 模块），组件扫描覆盖所有模块；Mapper 由 `@MapperScan("com.kyoo.mall.**.infrastructure.persistence.mapper")` 扫描（Mapper 单独放 mapper 子包，只被 RepositoryImpl 使用）。
 - **JWT 签发在 user 模块**（`infrastructure/security/JwtTokenProvider`），**安全规则在 app 模块**（`config/SecurityConfig`：哪些路径匿名属于部署关注点）。`/auth/**` 与商品 GET 匿名，其余需登录。

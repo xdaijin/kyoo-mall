@@ -66,6 +66,13 @@ class ArchitectureTest {
             .should().dependOnClassesThat().resideInAPackage("com.kyoo.mall..infrastructure.persistence.mapper..")
             .as("Mapper 是 ORM 细节，只能被 RepositoryImpl 使用，禁止注入到 Controller/AppService");
 
+    private static final ArchRule ORM类型不得进入DOMAIN与APPLICATION = noClasses()
+            .that().resideInAnyPackage("com.kyoo.mall..domain..", "com.kyoo.mall..application..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "com.baomidou.mybatisplus.extension..", "com.baomidou.mybatisplus.core..")
+            .as("分页等 ORM 实现类型（Page/QueryWrapper）不得进入 domain/application，" +
+                    "分页契约使用 common 的 PageQuery/PageResult；domain 只允许 MP 注解包");
+
     // ========== 执行 ==========
 
     @Test
@@ -101,5 +108,10 @@ class ArchitectureTest {
     @Test
     void mapperOnlyUsedByRepositoryImpl() {
         MAPPER只被仓储实现使用.check(classes);
+    }
+
+    @Test
+    void ormTypesMustNotEnterDomainOrApplication() {
+        ORM类型不得进入DOMAIN与APPLICATION.check(classes);
     }
 }

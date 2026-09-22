@@ -1,7 +1,8 @@
 package com.kyoo.mall.product.application.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kyoo.mall.common.BusinessException;
+import com.kyoo.mall.common.PageQuery;
+import com.kyoo.mall.common.PageResult;
 import com.kyoo.mall.product.application.command.CreateProductCommand;
 import com.kyoo.mall.product.application.command.UpdateProductCommand;
 import com.kyoo.mall.product.domain.model.Product;
@@ -19,8 +20,8 @@ public class ProductAppService {
 
     private final ProductRepository productRepository;
 
-    public Page<Product> pageOnSale(long current, long size) {
-        return productRepository.pageOnSale(current, size);
+    public PageResult<Product> pageOnSale(PageQuery query) {
+        return productRepository.pageOnSale(query);
     }
 
     public Product getOnSaleById(Long id) {
