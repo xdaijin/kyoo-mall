@@ -133,6 +133,32 @@ com.kyoo.mall.<域>/
 
 **三套 DTO 互不复用**：`interfaces/dto`（对外 HTTP）、`application/gateway/dto`（出站端口契约，技术无关）、`infrastructure/client/dto`（第三方 wire 格式）。字段相同也不合并，重复是有意的隔离。
 
+### 2.4.1 速查表（新代码不知道放哪时先查这张）
+
+| 要写的东西 | 放哪 |
+|---|---|
+| HTTP 接口 | `interfaces/XxxController` |
+| MQ 消费 / 定时任务 | `interfaces/consumer/`、`interfaces/job/`（入站适配器，和 Controller 一样薄） |
+| 对外请求/响应体 | `interfaces/dto/`（XxxRequest/XxxResponse，record） |
+| 一个写用例 | `application/service/XxxAppService` 一个方法 + `application/command/XxxCommand` |
+| 读用例查询条件 | `application/query/`（用例视角）或 `domain/repository/query/`（仓储视角） |
+| 应用服务返回值 | `application/result/XxxResult`（简单场景可省，Controller 直接返回） |
+| 业务规则、状态流转 | `domain/model/` 聚合方法上、枚举方法（`canTransitTo`） |
+| 跨实体业务规则 | `domain/service/XxxDomainService` |
+| 领域服务参数打包 | `domain/service/param/XxxParam` |
+| 有领域含义的入参 | `domain/model/` 值对象 |
+| 领域事件 | `domain/event/XxxEvent`（不可变 record，与 model 平级） |
+| 发 MQ / 调外部接口 | 接口在 `application/gateway/`（+`dto/`），实现在 `infrastructure/messaging/`、`client/` |
+| 第三方协议模型 | `infrastructure/client/<服务>/dto/`（XxxApiRequest/Response） |
+| Mapper | `infrastructure/persistence/mapper/`（只被 RepositoryImpl 使用） |
+| 业务常量/枚举 | `domain/model/`（跟着聚合走，禁止集中式 enums/ 目录） |
+| 异常 | 基类在 common；域专属异常 → `<域>/domain/exception/`（extends BusinessException） |
+| 分页查询条件/结果 | common 的 `PageQuery`/`PageResult`，ORM 分页对象不出 infrastructure |
+| 审计字段 | 继承 common `BaseEntity`，MetaObjectHandler 统一填充，禁止手动 set |
+| 配置属性类 | 所属模块 `infrastructure/config/`；全局组件 → app 按层归类（§2.5） |
+| 工具类 | 先问能否做成值对象/领域服务；纯静态函数放使用层的 `util/`；跨模块才进 common |
+| 拿不准 | 放所属业务模块，**别丢 common** |
+
 ### 2.5 配置与资源归属
 
 | 内容 | 位置 |
